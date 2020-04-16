@@ -86,8 +86,6 @@ def generate_JSONs(denotated_sections, j):
                json.dump(f, fp)
 
 
-
-
 def main():
      subset_path = os.path.abspath("comm_use_subset_100") + "/"
      comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
@@ -98,7 +96,6 @@ def main():
 
      denot_sections = tag_article("/home/jesper/EDAN70/fa16032841f11e0924b539d21444915e3bcc9a0e.json")
      print(denot_sections)
-
 
      #for j in range(100):
           #print(comm_use_subset_100[i])
