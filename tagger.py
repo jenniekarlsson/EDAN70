@@ -1,6 +1,7 @@
 import sys, os, pathlib, json
 from os import listdir
 from os.path import isfile, join
+import re
 
 dicts = {}
 
@@ -8,13 +9,16 @@ def path_to_paper_id(path):
      return path.split("/")[-1][:-5] #cutting last 5 cuts ".json"
 
 def read_article(path):
+     ret = []
      with open(path) as f:
           d = json.load(f)
-          title_data = [d["metadata"]["title"]]
-          abstract_data = [a["text"] for a in d["abstract"]]
-          body_text_data = [t["text"] for t in d["body_text"]] #a list of all text sections in article
+          ret.append((d["metadata"]["title"], "title"))
+          for t in d["abstract"]:
+               ret.append((t["text"], "abstract"))
+          for t in d["body_text"]:
+               ret.append((t["text"], "body_text"))
 
-     return [title_data, abstract_data, body_text_data]
+     return ret
 
 def read_meta(paperid):
      metafile = open("meta_subset_100.csv", "r")
@@ -28,82 +32,66 @@ def read_meta(paperid):
 
 def setup_dicts():
      virus_list = [line.strip() for line in open("Supplemental_file1.txt")]
+     virus_list.sort(key = len)
      disease_list = [line.strip() for line in open ("Supplemental_file2.txt")]
+     disease_list.sort(key = len)
 
      dicts["Virus_SARS-CoV-2"] = virus_list
      dicts["Disease_COVID-19"] = disease_list
 
-def get_longest_match(subsection, d):
-     longestmatch = ""
-     longestbegin = -1
-     longestend = -1
-     for phrase in d:
-          begin = subsection.find(phrase)
-          end = begin + len(phrase)
-          if begin > 0:
-               if is_overlapping(begin, end, longestbegin, longestend):
-                    if len(longestmatch) < len(phrase):
-                         longestmatch = phrase
-                         longestbegin = begin
-                         longestend = begin + len(longestmatch)
-               elif longestmatch == "":
-                    longestmatch = phrase
-                    longestbegin = begin
-                    longestend = begin + len(longestmatch)
-
-     if not longestmatch == "":
-          return longestbegin, longestmatch, longestend
-     else:
-          return None, None, None
-
-def is_overlapping(b1, e1, b2, e2):
-     return not (e2<b1 or e1<b2)
-     
-
 def tag_article(article_path):
      article = read_article(article_path)
-     section_nr = 0
      denotated_sections = []
 
-     for section in article:
-          for subsection in section:
-               subsection = subsection.lower()
-               denotations = []
-               longestmatch = ""
-               for id in dicts.keys():
-                    longestbegin, longestmatch, longestend = get_longest_match(subsection, dicts[id])
-                    info = {"id": id, "span":{"begin":longestbegin, "end":longestend}, "obj":"?"}
-                    if not longestmatch == None:
-                         denotations.append(info)
-                         print("found", longestmatch)
-                              
-               denotated_sections.append(denotations)
-     return denotated_sections
+     for subsection in article:
+          subsection = subsection[0].lower()
+          denotations = []
+          for id in dicts.keys():
+               s = ""
+               re_or = "(" + s.join([x + "|" for x in dicts[id]])[:-1] + ")"
+               info = [(id, m.group(0), m.start(0), m.end(0)) for m in re.finditer(re_or, subsection)]
 
-def generate_JSONs(denotated_sections, j):
-     for i, f in enumerate(denotated_sections):
-          with open("result.json" + str(i) +str(j), "w") as fp:
-               json.dump(f, fp)
+               if(len(info) > 0):
+                    for x in info:
+                         infodict = {"id": x[0], "span":{"begin":x[2], "end":x[3]}, "obj":"OBJ"}
+                         denotations.append(infodict)
+
+          denotated_sections.append(denotations)
+
+     return denotated_sections, article
+
+def generate_JSONs(denotated_sections, article, path):
+     [cord_uid, sourcedb, sourceid] = read_meta(path_to_paper_id(path))
+     for i in range(len(article)):
+          text = article[i][0]
+          section = article[i][1]
+          denot = denotated_sections[i]
+
+          json_data = {"cord_uid":cord_uid,
+                         "sourcedb":sourcedb,
+                         "sourceid":sourceid,
+                         "div_id":i,
+                         "text":text,
+                         "denotations":denot
+                         }
+          with open(cord_uid + "-" + str(i) + "-" + section +".json", "w") as fp:
+               json.dump(json_data, fp)
 
 
 def main():
      subset_path = os.path.abspath("comm_use_subset_100") + "/"
      comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
-     fileonepath = subset_path + comm_use_subset_100[1]
-     #fileonepath = "/home/jesper/EDAN70/comm_use_subset_100/comm_use_subset_100/04d02a37dcbb17916d2a5c03288cb9b59000ebba.json"
-     
+     filepath_one = subset_path + comm_use_subset_100[1]
+     filepath_two = "/home/jesper/EDAN70/comm_use_subset_100/dd9a2b263b1b66db904ed8a18dd6eba55e64bfff.json"
+     filepath_three = "/home/jesper/EDAN70/comm_use_subset_100/04d02a37dcbb17916d2a5c03288cb9b59000ebba.json"     
+
      setup_dicts()
 
-     denot_sections = tag_article("/home/jesper/EDAN70/fa16032841f11e0924b539d21444915e3bcc9a0e.json")
-     print(denot_sections)
+     denot_sections_one, article_one = tag_article("/home/jesper/EDAN70/fa16032841f11e0924b539d21444915e3bcc9a0e.json")
+     denot_sections_two, article_two = tag_article("/home/jesper/EDAN70/comm_use_subset_100/dd9a2b263b1b66db904ed8a18dd6eba55e64bfff.json")
+     denot_sections_three, article_three = tag_article("/home/jesper/EDAN70/comm_use_subset_100/04d02a37dcbb17916d2a5c03288cb9b59000ebba.json")
 
-     #for j in range(100):
-          #print(comm_use_subset_100[i])
-          #print(read_meta(comm_use_subset_100[i][:-5]))
-
-          #denot_sections = tag_article(subset_path + comm_use_subset_100[j])
-          #print(denot_sections)
-          #generate_JSONs(denot_sections, j)
+     generate_JSONs(denot_sections_one, article_one, filepath_one)
 
 if __name__ == '__main__':
      main()
