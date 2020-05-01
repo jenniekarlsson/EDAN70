@@ -28,7 +28,8 @@ def read_meta(paperid):
                coord_uid = metaline[0]
                sourcedb = metaline[2]
                sourceid = metaline[5]
-     return [coord_uid, sourcedb, sourceid]
+               obj = metaline[-1]
+     return [coord_uid, sourcedb, sourceid, obj]
 
 def setup_dicts():
      virus_list = [line.strip() for line in open("Supplemental_file1.txt")]
@@ -42,6 +43,7 @@ def setup_dicts():
 def tag_article(article_path):
      article = read_article(article_path)
      denotated_sections = []
+     obj = read_meta(path_to_paper_id(article_path))[3]
 
      for subsection in article:
           subsection = subsection[0].lower()
@@ -53,7 +55,7 @@ def tag_article(article_path):
 
                if(len(info) > 0):
                     for x in info:
-                         infodict = {"id": x[0], "span":{"begin":x[2], "end":x[3]}, "obj":"OBJ"}
+                         infodict = {"id": x[0], "span":{"begin":x[2], "end":x[3]}, "obj":obj}
                          denotations.append(infodict)
 
           denotated_sections.append(denotations)
@@ -61,7 +63,7 @@ def tag_article(article_path):
      return denotated_sections, article
 
 def generate_JSONs(denotated_sections, article, path):
-     [cord_uid, sourcedb, sourceid] = read_meta(path_to_paper_id(path))
+     [cord_uid, sourcedb, sourceid, obj] = read_meta(path_to_paper_id(path))
      for i in range(len(article)):
           text = article[i][0]
           section = article[i][1]
@@ -81,17 +83,35 @@ def generate_JSONs(denotated_sections, article, path):
 def main():
      subset_path = os.path.abspath("comm_use_subset_100") + "/"
      comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
+
      filepath_one = subset_path + comm_use_subset_100[1]
      filepath_two = "/home/jesper/EDAN70/comm_use_subset_100/dd9a2b263b1b66db904ed8a18dd6eba55e64bfff.json"
-     filepath_three = "/home/jesper/EDAN70/comm_use_subset_100/04d02a37dcbb17916d2a5c03288cb9b59000ebba.json"     
+     filepath_three = "/home/jesper/EDAN70/comm_use_subset_100/e53306862eb2cab646ba36a1e685fdb5a392da42.json" 
+
+     filepath_hit = "/home/jesper/EDAN70/comm_use_subset_100/aa973f2833829b97ebdfd6ce2ac6a29b9100db3a.json"    
 
      setup_dicts()
 
-     denot_sections_one, article_one = tag_article("/home/jesper/EDAN70/fa16032841f11e0924b539d21444915e3bcc9a0e.json")
-     denot_sections_two, article_two = tag_article("/home/jesper/EDAN70/comm_use_subset_100/dd9a2b263b1b66db904ed8a18dd6eba55e64bfff.json")
-     denot_sections_three, article_three = tag_article("/home/jesper/EDAN70/comm_use_subset_100/04d02a37dcbb17916d2a5c03288cb9b59000ebba.json")
+     #denot_sections_one, article_one = tag_article("/home/jesper/EDAN70/comm_use_subset_100/fa16032841f11e0924b539d21444915e3bcc9a0e.json")
+     #denot_sections_two, article_two = tag_article("/home/jesper/EDAN70/comm_use_subset_100/dd9a2b263b1b66db904ed8a18dd6eba55e64bfff.json")
+     #denot_sections_three, article_three = tag_article("/home/jesper/EDAN70/comm_use_subset_100/e53306862eb2cab646ba36a1e685fdb5a392da42.json")
 
-     generate_JSONs(denot_sections_one, article_one, filepath_one)
+     denot_sections_hit, article_hit = tag_article("/home/jesper/EDAN70/comm_use_subset_100/aa973f2833829b97ebdfd6ce2ac6a29b9100db3a.json")
+     
+     '''
+     for filepath in comm_use_subset_100:
+          denot_sec, art = tag_article(subset_path + filepath)
+          for subsec in denot_sec:
+               if len(subsec) > 0:
+                    print(filepath)
+                    print(read_meta(path_to_paper_id(filepath))[0])
+                    print(denot_sec)
+                    return
+     '''
+
+     print(read_meta(path_to_paper_id(filepath_hit))[2])
+     generate_JSONs(denot_sections_hit, article_hit, filepath_hit)
+     #generate_JSONs(denot_sections_three, article_three, filepath_three)
 
 if __name__ == '__main__':
      main()
