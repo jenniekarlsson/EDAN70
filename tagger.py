@@ -36,9 +36,12 @@ def setup_dicts():
      virus_list.sort(key = len)
      disease_list = [line.strip() for line in open ("Supplemental_file2.txt")]
      disease_list.sort(key = len)
+     symptom_list = [line.strip() for line in open ("Symptom_covid-19.txt")]
+     symptom_list.sort(key = len)
 
      dicts["Virus_SARS-CoV-2"] = virus_list
      dicts["Disease_COVID-19"] = disease_list
+     dicts["Symptom_COVID-19"] = symptom_list
 
 def tag_article(article_path, metaf):
      article = read_article(article_path)

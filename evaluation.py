@@ -1,75 +1,99 @@
 import sys, os, pathlib, json
 from os import listdir
 from os.path import isfile, join
+import time
 
-def json_to_dict(json_path):
-    json = open(json_path,"r")
-    for line in json:
-        dict.append = json.loads(line)
-    return dict
-
-
-def find_real_entities_retrived(dict_gold, denotation):
-    if dict_gold["text"] == denotation["text"]
-        real_entities_retrived = 0
+def find_real_entities_retrieved(dict_gold, denotation):
+    if dict_gold["text"] == denotation["text"]:
+        real_entities_retrieved = 0
         for denot_gold in dict_gold["denotations"]:
             span_gold = denot_gold["span"]
-            for denot in denotation["denotations"]
+            for denot in denotation["denotations"]:
                 if span_gold == denot["span"]:
-                    real_entities_retrived += 1
+                    real_entities_retrieved += 1
 
-    return real_entities_retrived
+    return real_entities_retrieved
 
 
 def find_real_entities(dict_gold):
     real_entities = 0
     for denot_gold in dict_gold["denotations"]:
         real_entities += 1
-return real_entities
+    return real_entities
 
 
-def find_entities_retrived(denot)
-    entities_retrived = 0
+def find_entities_retrieved(denot):
+    entities_retrieved = 0
     for denot_line in denot["denotations"]:
-        entities_retrived += 1
-return entities_retrived
+        entities_retrieved += 1
+    return entities_retrieved
 
 
-def Recall(real_entities, real_entities_retrived):
-    recall = real_entities_retrived/real_entities
+def get_recall(real_entities, real_entities_retrieved):
+    if real_entities == 0:
+        recall = '0 real ent'
+    else:
+        recall = real_entities_retrieved/real_entities
     return recall
 
 
-def Precision(real_entities_retrived,entities_retrived):
-    precision = real_entities_retrived/entities_retrived
+def get_precision(real_entities_retrieved, entities_retrieved):
+    if entities_retrieved == 0:
+        precision = '0 ent ret'
+    else:
+        precision = real_entities_retrieved/entities_retrieved
     return precision
 
 
 def main():
-    subset_path_gold = os.path.abspath("gold_papers") + "/"
-    gold_papers = [f for f in listdir(subset_path_gold) if isfile(join(subset_path_gold, f))]
-    subset_path_denot = os.path.abspath("gold_papers_tagged") + "/"
-    denot_papers = [f for f in listdir(subset_path_denot) if isfile(join(subset_path_denot, f))]
+    #setting up gold dicts
+    gold_std = [line for line in open('updated_gold_standard.json')]
+    gold_dicts = []
+    with open('updated_gold_standard.json') as f:
+        for jsonObj in f:
+            one_dict = json.loads(jsonObj)
+            gold_dicts.append(one_dict)
+    gold_dicts = sorted(gold_dicts, key=lambda i: i['text'])
 
+    #setting up our tagged dicts
+    denot_folder_path = os.path.abspath("gold_papers_tagged") + "/"
+    denot_papers = [f for f in listdir(denot_folder_path) if isfile(join(denot_folder_path, f))]
+    denot_dicts = []
+
+    for filename in denot_papers:
+        with open(denot_folder_path + filename) as f:
+            for jsonObj in f:
+                one_dict = json.loads(jsonObj)
+                denot_dicts.append(one_dict)
+    denot_dicts = sorted(denot_dicts, key=lambda i: i['text'])
+
+    #start of evaluation
     evaluation_list = []
+    tot_entities_retrieved = 0
+    tot_real_entities = 0 
+    tot_real_entities_retrieved = 0
+    for dict_gold, dict_denot in zip(gold_dicts, denot_dicts):
+        real_entities_retrieved = find_real_entities_retrieved(dict_gold, dict_denot)
+        tot_real_entities_retrieved += real_entities_retrieved
 
-    for j in range(len(gold_papers))
-        gold_papers_path = subset_path_gold + gold_papers[j]
-        dict_gold = json_to_dict(gold_papers_path)
-        denot_papers_path = subset_path_denot + denot_papers[j]
-        denotation = json_to_dict(denot_papers_path)
-
-        real_entities_retrived = find_real_entities_retrived(dict_gold, denotation)
         real_entities = find_real_entities(dict_gold)
-        entities_retrived = find_entities_retrived(denot)
+        tot_real_entities += real_entities
 
-        recall = Recall(real_entities, real_entities_retrived)
-        precision = Precision(real_entities_retrived,entities_retrived)
+        entities_retrieved = find_entities_retrieved(dict_denot)
+        tot_entities_retrieved += entities_retrieved
 
-        evaluation_list.append = {"Article: denot_papers_path,"recall": recall, "precision": precision}
+        recall = get_recall(real_entities, real_entities_retrieved)
+        precision = get_precision(real_entities_retrieved, entities_retrieved)
+
+        evaluation_list.append({"cord_uid": dict_gold["cord_uid"], "recall":recall, "precision": precision})
     
     print(evaluation_list)
+    print("tot_real_entities: " + str(tot_real_entities) + "\n"
+    "tot_entities_retrieved: " + str(tot_entities_retrieved) + "\n"
+    "tot_real_entities_retrieved: " + str(tot_real_entities_retrieved) + "\n"
+    "total recall: " + str(get_recall(tot_real_entities, tot_real_entities_retrieved)) + "\n"
+    "total precision: " + str(get_precision(tot_real_entities_retrieved, tot_entities_retrieved)) + "\n")
 
 
 if __name__ == '__main__':
-     main()
+    main()
