@@ -48,7 +48,7 @@ def Precision(real_entities_retrived,entities_retrived):
 def main():
     subset_path_gold = os.path.abspath("gold_papers") + "/"
     gold_papers = [f for f in listdir(subset_path_gold) if isfile(join(subset_path_gold, f))]
-    subset_path_denot = os.path.abspath("denot_papers") + "/"
+    subset_path_denot = os.path.abspath("gold_papers_tagged") + "/"
     denot_papers = [f for f in listdir(subset_path_denot) if isfile(join(subset_path_denot, f))]
 
     evaluation_list = []
