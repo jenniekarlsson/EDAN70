@@ -1,14 +1,6 @@
-import re
-t = "once upon a time sars 2 infection sars 2019"
-
-viruslist = [line.strip() for line in open("Supplemental_file1.txt")]
-sort_viruslist = sorted(viruslist, key=len)[::-1]
-
-or_viruslist = ""
-re_or = "(" + or_viruslist.join([x + "|" for x in sort_viruslist])[:-1] + ")"
-
-#print([(m.group(0), m.start(0), m.end(0)) for m in re.finditer(re_or, t)])
 
 
-ret = [(m.group(0), m.start(0), m.end(0)) for m in re.finditer("abc|ab", "aljsdnskj abc asodji ab")]
-print( ret)
+a = { "denotations": [{"id": "A2", "span": {"begin": 76, "end": 84}, "obj": "Virus_other:694009 "}, {"id": "A3", "span": {"begin": 255, "end": 296}, "obj": "Virus_SARS-CoV-2:2697049"}, {"id": "A1", "span": {"begin": 19, "end": 36}, "obj": "Virus_SARS-CoV-2:2697049"}, {"id": "A6", "span": {"begin": 38, "end": 47}, "obj": "Virus_SARS-CoV-2:2697049"}]}
+
+if 
+print(a==b)
