@@ -1,0 +1,6 @@
+1. one of the files in the given "updated_gold_standard.json" is missing a cord_uid
+2. none of the files in "updated_gold_standard.json" has a div_id
+3. one of the files in "updated_gold_standard.json" has an associated metafile with no paperid
+4. in a json output file we generate the following: cord_uid, sourcedb, sourceid, div_id, text, denotations [id, span[begin, end], obj].
+What should id be? (We have it as the category, but gold_std has A5, A26 etc). 
+What should obj be? (We have it as the url from the metafile, but gold_std has the category)
