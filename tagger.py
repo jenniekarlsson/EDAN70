@@ -85,7 +85,7 @@ def generate_JSONs(denotated_sections, article, path, metaf):
 
 def main():
      #subset_path = os.path.abspath("comm_use_subset_100") + "/"
-     goldpapers_path = os.path.abspath("gold_standard_subset_10") + "\\"
+     goldpapers_path = os.path.abspath("gold_standard_subset_10") + "/"
      #comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
      goldpapers = [f for f in listdir(goldpapers_path) if isfile(join(goldpapers_path, f))]
 

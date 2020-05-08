@@ -52,6 +52,7 @@ def get_dicts(folder_path):
         with open(folder_path + filename, 'r') as f:
             one_dict = json.load(f)
             dicts.append(one_dict)
+    print(dicts)
     dicts = sorted(dicts, key=lambda i: i['text'])
     return dicts
 
@@ -61,7 +62,7 @@ def main():
     gold_dicts = get_dicts(gold_folder_path)
 
     #setting up our dicts
-    denot_folder_path = os.path.abspath("gold_papers_tagged") + "/"
+    denot_folder_path = os.path.abspath("gold_standard_subset_10") + "/"
     denot_dicts = get_dicts(denot_folder_path)
 
     #setting up used categories (should be automated if muchos categories)
