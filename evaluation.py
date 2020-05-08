@@ -4,8 +4,8 @@ from os.path import isfile, join
 import time
 
 def find_real_entities_retrieved(dict_gold, dict_denot, cats):
+    real_entities_retrieved = 0
     if dict_gold["text"] == dict_denot["text"]:
-        real_entities_retrieved = 0
         for denot_gold in dict_gold["denotations"]:
             span_gold = denot_gold["span"]
             this_cat = denot_gold["id"]
