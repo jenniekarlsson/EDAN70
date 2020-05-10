@@ -33,6 +33,22 @@ def find_entities_retrieved(dict_denot, scoredict):
             scoredict[this_cat]["ent_ret"] += 1
     return scoredict
 
+def update_scoredict(scoredict, dict_denot, dict_gold):
+    cats = list(scoredict.keys())
+    for denot in dict_denot["denotations"]:
+        this_cat = denot["id"]
+        if this_cat in cats:
+            scoredict[this_cat]["ent_ret"] += 1
+            
+            if denot["span"] in dict_gold["denotations"]:
+                scoredict[this_cat]["real_ent_ret"] += 1
+
+    for gold_denot in dict_gold["denotations"]:
+        this_cat = gold_denot["id"]
+        if this_cat in cats:
+            scoredict[this_cat]["real_ent"] += 1
+    
+    return scoredict
 
 def get_recall(real_entities, real_entities_retrieved):
     if real_entities == 0:
@@ -56,7 +72,6 @@ def get_dicts(folder_path):
         with open(folder_path + filename, 'r') as f:
             one_dict = json.load(f)
             dicts.append(one_dict)
-    print(dicts)
     dicts = sorted(dicts, key=lambda i: i['text'])
     return dicts
 
@@ -66,45 +81,32 @@ def main():
     gold_dicts = get_dicts(gold_folder_path)
 
     #setting up our dicts
-    denot_folder_path = os.path.abspath("gold_standard_subset_10") + "/"
+    denot_folder_path = os.path.abspath("gold_papers_tagged") + "/"
     denot_dicts = get_dicts(denot_folder_path)
 
-    #setting up used categories (should be automated if muchos categories)
+    #setting up cats and dict for separate class scoring
     cats = ["Virus_SARS-CoV-2", "Disease_COVID-19", "Symptom_COVID-19"]
-
-    #setting up dict for separate class scoring
     entlist = ["real_ent_ret","real_ent","ent_ret"]
     entdict = dict(zip(entlist, [0 for i in range(len(cats))]))
-    scoredict = dict(zip(a, [entities for i in range(len(cats))]))
+    scoredict = dict(zip(cats, [entdict for i in range(len(cats))]))
 
     #evaluation
-    evaluation_list = []
-    tot_entities_retrieved = 0
-    tot_real_entities = 0 
-    tot_real_entities_retrieved = 0
     for dict_gold, dict_denot in zip(gold_dicts, denot_dicts):
 
-        real_entities_retrieved = find_real_entities_retrieved(dict_gold, dict_denot, cats)
-        tot_real_entities_retrieved += real_entities_retrieved
+        scoredict = update_scoredict(scoredict, dict_denot, dict_gold)
 
-        real_entities = find_real_entities(dict_gold, cats)
-        tot_real_entities += real_entities
+    print(str(scoredict) + "\n")
 
-        entities_retrieved = find_entities_retrieved(dict_denot)
-        tot_entities_retrieved += entities_retrieved
+    rec_prec = ["recall", "precision"]
+    rec_prec_init = dict(zip(rec_prec, [0 for i in range(len(rec_prec))]))
+    rec_prec_dict = dict(zip(cats, [rec_prec_init for i in range(len(cats))]))
+    for cat in scoredict:
+        rec_prec_dict[cat]["recall"] = get_recall(scoredict[cat]["real_ent"], scoredict[cat]["real_ent_ret"])
+        rec_prec_dict[cat]["precision"] = get_precision(scoredict[cat]["real_ent_ret"], scoredict[cat]["ent_ret"])
 
-        recall = get_recall(real_entities, real_entities_retrieved)
-        precision = get_precision(real_entities_retrieved, entities_retrieved)
-
-        evaluation_list.append({"cord_uid": dict_gold["cord_uid"], "recall":recall, "precision": precision})
+   
+    #print(rec_prec_dict)
     
-    print(evaluation_list)
-    print("tot_real_entities: " + str(tot_real_entities) + "\n"
-    "tot_entities_retrieved: " + str(tot_entities_retrieved) + "\n"
-    "tot_real_entities_retrieved: " + str(tot_real_entities_retrieved) + "\n"
-    "total recall: " + str(get_recall(tot_real_entities, tot_real_entities_retrieved)) + "\n"
-    "total precision: " + str(get_precision(tot_real_entities_retrieved, tot_entities_retrieved)) + "\n")
-
 
 if __name__ == '__main__':
     main()
