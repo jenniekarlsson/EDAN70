@@ -3,8 +3,9 @@ from os import listdir
 from os.path import isfile, join
 import time
 
-def find_real_entities_retrieved(dict_gold, dict_denot, cats):
-    real_entities_retrieved = 0
+
+def find_real_entities_retrieved(dict_gold, dict_denot, scoredict):
+    cats = list(scoredict.keys())
     if dict_gold["text"] == dict_denot["text"]:
         for denot_gold in dict_gold["denotations"]:
             span_gold = denot_gold["span"]
@@ -12,21 +13,25 @@ def find_real_entities_retrieved(dict_gold, dict_denot, cats):
             if this_cat in cats:
                 for denot in dict_denot["denotations"]:
                     if span_gold == denot["span"]:
-                        real_entities_retrieved += 1
+                        scoredict[this_cat]["real_ent_ret"] += 1
 
-    return real_entities_retrieved
+    return scoredict
 
-
-def find_real_entities(dict_gold, cats):
-    real_entities = 0
+def find_real_entities(dict_gold, scoredict):
+    cats = list(scoredict.keys())
     for match_gold in dict_gold["denotations"]:
-        if match_gold["id"] in cats:
-            real_entities += 1
-    return real_entities
+        this_cat = match_gold["id"]
+        if this_cat in cats:
+            scoredict[this_cat]["real_ent"] += 1
+    return scoredict
 
-
-def find_entities_retrieved(dict_denot):
-    return len(dict_denot["denotations"])
+def find_entities_retrieved(dict_denot, scoredict):
+    cats = list(scoredict.keys())
+    for denot in dict_denot["denotations"]:
+        this_cat = denot["id"]
+        if this_cat in cats:
+            scoredict[this_cat]["ent_ret"] += 1
+    return scoredict
 
 
 def get_recall(real_entities, real_entities_retrieved):
@@ -35,7 +40,6 @@ def get_recall(real_entities, real_entities_retrieved):
     else:
         recall = real_entities_retrieved/real_entities
     return recall
-
 
 def get_precision(real_entities_retrieved, entities_retrieved):
     if entities_retrieved == 0:
@@ -67,6 +71,11 @@ def main():
 
     #setting up used categories (should be automated if muchos categories)
     cats = ["Virus_SARS-CoV-2", "Disease_COVID-19", "Symptom_COVID-19"]
+
+    #setting up dict for separate class scoring
+    entlist = ["real_ent_ret","real_ent","ent_ret"]
+    entdict = dict(zip(entlist, [0 for i in range(len(cats))]))
+    scoredict = dict(zip(a, [entities for i in range(len(cats))]))
 
     #evaluation
     evaluation_list = []
