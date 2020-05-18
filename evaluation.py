@@ -11,7 +11,7 @@ def update_scoredict(scoredict, dict_denot, dict_gold):
             scoredict[this_cat]["ent_ret"] += 1
             
             for gold_denot in dict_gold["denotations"]:
-                if gold_denot["span"] == denot["span"]:
+                if gold_denot["span"] == denot["span"] and gold_denot["id"] == this_cat:
                     scoredict[this_cat]["real_ent_ret"] += 1
      
 
@@ -51,7 +51,7 @@ def main():
     gold_dicts = get_dicts(gold_folder_path)
 
     #setting up our dicts
-    denot_folder_path = os.path.abspath("out_test") + "/"
+    denot_folder_path = os.path.abspath("gold_papers_tagged") + "/"
     denot_dicts = get_dicts(denot_folder_path)
 
     #setting up cats and dict for separate class scoring
@@ -106,4 +106,6 @@ def main():
 
 
 if __name__ == '__main__':
+    t0 = time.clock()
     main()
+    print(time.clock() - t0)

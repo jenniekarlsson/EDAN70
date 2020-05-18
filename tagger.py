@@ -2,6 +2,7 @@ import sys, os, pathlib, json
 from os import listdir
 from os.path import isfile, join
 import re
+import time
 
 dicts = {}
 
@@ -32,15 +33,17 @@ def read_meta(paperid, metaf):
      return [0,0,0,0]
 
 def setup_dicts():
-     virus_list = [line.strip() for line in open("Supplemental_file1.txt")]
-     virus_list.sort(key = len)
-     disease_list = [line.strip() for line in open ("Supplemental_file2.txt")]
+     disease_list = [line.strip() for line in open ("Supplemental_file1.txt")]
      disease_list.sort(key = len)
+
+     virus_list = [line.strip() for line in open("Supplemental_file2.txt")]
+     virus_list.sort(key = len)
+
      symptom_list = [line.strip() for line in open ("Supplemental_file3.txt")]
      symptom_list.sort(key = len)
 
-     dicts["Virus_SARS-CoV-2"] = virus_list
      dicts["Disease_COVID-19"] = disease_list
+     dicts["Virus_SARS-CoV-2"] = virus_list
      dicts["Symptom_COVID-19"] = symptom_list
 
 def tag_article(article_path, metaf):
@@ -50,6 +53,7 @@ def tag_article(article_path, metaf):
 
      for subsection in article:
           subsection = subsection[0].lower()
+          subsection = subsection.replace('-', ' ')
           denotations = []
           for id in dicts.keys():
                s = ""
@@ -84,20 +88,26 @@ def generate_JSONs(denotated_sections, article, path, metaf):
 
 
 def main():
-     #subset_path = os.path.abspath("comm_use_subset_100") + "/"
-     goldpapers_path = os.path.abspath("gold_standard_subset_10") + "/"
-     #comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
-     goldpapers = [f for f in listdir(goldpapers_path) if isfile(join(goldpapers_path, f))]
+     subset_path = os.path.abspath("comm_use_subset_100") + "/"
+     #goldpapers_path = os.path.abspath("gold_standard_subset_10") + "/"
+     comm_use_subset_100 = [f for f in listdir(subset_path) if isfile(join(subset_path, f))]
+     #goldpapers = [f for f in listdir(goldpapers_path) if isfile(join(goldpapers_path, f))]
 
-     metaf = "gold_standard_subset_10.csv"
+
+     metaf = "meta_subset_100.csv"
+     #metaf = "gold_standard_subset_10.csv"
 
      setup_dicts()
 
-     for filepath in goldpapers:
-          denot_sec, art = tag_article(goldpapers_path + filepath, metaf)
+     for filepath in comm_use_subset_100:
+          denot_sec, art = tag_article(subset_path + filepath, metaf)
           generate_JSONs(denot_sec, art, filepath, metaf)
 
 if __name__ == '__main__':
+     t0 = time.clock()
      main()
+     t1 = time.clock() - t0
+     print(t1)
+
      
 
