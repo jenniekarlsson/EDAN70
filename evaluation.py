@@ -64,7 +64,6 @@ def main():
     for dict_gold, dict_denot in zip(gold_dicts, denot_dicts):
         update_scoredict(scoredict, dict_denot, dict_gold)
 
-    print(scoredict)
     rec_prec = ["recall", "precision"]
     rec_prec_init = dict(zip(rec_prec, [0 for i in range(len(rec_prec))]))
     rec_prec_dict = dict(zip(cats, [rec_prec_init.copy() for i in range(len(cats))]))
@@ -72,7 +71,6 @@ def main():
         rec_prec_dict[cat]["recall"] = get_recall(scoredict[cat]["real_ent"], scoredict[cat]["real_ent_ret"])
         rec_prec_dict[cat]["precision"] = get_precision(scoredict[cat]["real_ent_ret"], scoredict[cat]["ent_ret"])
    
-    print(rec_prec_dict)
     tot_prec, tot_rec, tot_tp, tot_fp, tot_fn = 0, 0, 0, 0, 0
     for cat in cats:
         tot_prec += rec_prec_dict[cat]["precision"]
@@ -90,6 +88,7 @@ def main():
         print(cat + " true positives: " + str(tp))
         print(cat + " false positives: " + str(fp))
         print(cat + " false negatives: " + str(fn))
+        print()
 
     
     macro_prec = tot_prec/len(cats)
