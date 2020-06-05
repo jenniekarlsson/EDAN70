@@ -95,13 +95,15 @@ def main():
     macro_rec = tot_rec/len(cats)
     micro_prec = tot_tp/(tot_tp+tot_fp)
     micro_rec = tot_tp/(tot_tp+tot_fn)
-    harmonic_mean = 2*macro_prec*macro_rec/(macro_prec + macro_rec)
+    macro_f1 = 2*macro_prec*macro_rec/(macro_prec + macro_rec)
+    micro_f1 = 2*micro_prec*micro_rec/(micro_prec + micro_rec)
 
     print("macro precision:" + str(macro_prec) + "\n"
     "macro recall: " + str(macro_rec) + "\n"
     "micro precision :" + str(micro_prec) + "\n"
     "micro recall: " + str(micro_rec) + "\n"
-    "harmonic mean: " + str(harmonic_mean))
+    "macro F1: " + str(macro_f1) + "\n"
+    "micro F1: " + str(micro_f1) + "\n")
 
 
 if __name__ == '__main__':

@@ -84,7 +84,7 @@ def tag_article(article_path, metaf):
 
                if(len(matches) > 0):
                     for match in matches:
-                         match_dict = {"id": match[0], "span":{"begin":match[1], "end":match[2]}, "obj":obj}
+                         match_dict = {"id": match[0], "span":{"begin":match[1], "end":match[2]}, "obj":match[0]}
                          denotations.append(match_dict)
           denotated_sections.append(denotations)
 
@@ -117,19 +117,19 @@ def generate_jsons(denotated_sections, article, path, metaf):
 
 
 def main():
-     #articles_path = os.path.abspath("comm_use_subset_100") + "/"
-     articles_path = os.path.abspath("gold_standard_subset_10") + "/"
+     articles_path = os.path.abspath("comm_use_subset_100") + "/"
+     #articles_path = os.path.abspath("gold_standard_subset_10") + "/"
 
      articles = [f for f in listdir(articles_path) if isfile(join(articles_path, f))]
 
-     #metaf = "meta_subset_100.csv"
-     metaf = "gold_standard_subset_10.csv"
+     metaf = "meta_subset_100.csv"
+     #metaf = "gold_standard_subset_10.csv"
 
      setup_dicts("/home/jesper/EDAN70/classes")
 
      for f in articles:
           denot_sec, art = tag_article(articles_path + f, metaf)
-          generate_jsons(denot_sec, art, f, metaf)
+          #generate_jsons(denot_sec, art, f, metaf)
 
 if __name__ == '__main__':
      t0 = time.clock()
